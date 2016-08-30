@@ -3,7 +3,7 @@
 "modid": "KratzAuth",
 "name": "KratzAuth",
 "description": "Authentication mod for carovnak.cz",
-"version": "0.1",
+"version": "1.0",
 "credits": "ForgeAuth mod",
 "logoFile": "",
 "mcversion": "1.6.4",
