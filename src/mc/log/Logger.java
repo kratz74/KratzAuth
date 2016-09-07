@@ -3,6 +3,8 @@
  */
 package mc.log;
 
+import cpw.mods.fml.common.FMLLog;
+
 /**
  * Logger.
  * Implemented as singleton.
@@ -36,7 +38,7 @@ public class Logger {
      */
     public static void log(final LogLevel level, final String message) {
         if (INSTANCE.level.shouldLog(level)) {
-            INSTANCE.log(new LogEntry(message, 0, (Object[])null));
+            INSTANCE.log(new LogEntry(level, message, 0, (Object[])null));
         }
     }
 
@@ -48,7 +50,7 @@ public class Logger {
      */
     public static void log(final LogLevel level, final String message, final Object... args) {
         if (INSTANCE.level.shouldLog(level)) {
-            INSTANCE.log(new LogEntry(message, 0, args));
+            INSTANCE.log(new LogEntry(level, message, 0, args));
         }
     }
 
@@ -60,7 +62,7 @@ public class Logger {
      */
     public static void log(final LogLevel level, final String message, final Exception ex) {
         if (INSTANCE.level.shouldLog(level)) {
-            INSTANCE.log(new LogEntry(message, 0, ex));
+            INSTANCE.log(new LogEntry(level, message, 0, ex));
         }
     }
 
@@ -72,7 +74,7 @@ public class Logger {
      */
     public static void log(final LogLevel level, final int indent, final String message) {
         if (INSTANCE.level.shouldLog(level)) {
-            INSTANCE.log(new LogEntry(message, indent * INSTANCE.indentSize, (Object[])null));
+            INSTANCE.log(new LogEntry(level, message, indent * INSTANCE.indentSize, (Object[])null));
         }
     }
 
@@ -85,7 +87,7 @@ public class Logger {
      */
     public static void log(final LogLevel level, final int indent, final String message, final Object... args) {
         if (INSTANCE.level.shouldLog(level)) {
-            INSTANCE.log(new LogEntry(message, indent * INSTANCE.indentSize, args));
+            INSTANCE.log(new LogEntry(level, message, indent * INSTANCE.indentSize, args));
         }
     }
 
@@ -98,7 +100,7 @@ public class Logger {
      */
     public static void log(final LogLevel level, final int indent, final String message, final Exception ex) {
         if (INSTANCE.level.shouldLog(level)) {
-            INSTANCE.log(new LogEntry(message, indent * INSTANCE.indentSize, ex));
+            INSTANCE.log(new LogEntry(level, message, indent * INSTANCE.indentSize, ex));
         }
     }
 
@@ -112,8 +114,8 @@ public class Logger {
      * Creates an instance of logger.
      */
     private Logger() {
-        //level = LogLevel.FINEST;
-        level = LogLevel.WARNING;
+        level = LogLevel.FINEST;
+        //level = LogLevel.WARNING;
         indentSize = 2;
     }
 
@@ -138,7 +140,8 @@ public class Logger {
      * @param entry Logging entry to be logged.
      */
     private void log(final LogEntry entry) {
-        System.out.println(entry.format());
+        //System.out.println(entry.format());
+        FMLLog.log(entry.getLevel().toLog4j(), entry.format());
     }
 
 }

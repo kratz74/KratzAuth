@@ -9,27 +9,26 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
-import cpw.mods.fml.common.network.NetworkMod;
-import mc.client.ClientPacketHandler;
+import cpw.mods.fml.common.network.NetworkRegistry;
+import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import mc.log.LogLevel;
+import mc.log.Logger;
 import mc.server.DatabaseLookup;
 import mc.server.ServerConfig;
-import mc.server.ServerPacketHandler;
 
 /**
  * Mod main class.
  */
 @Mod(modid=ModVars.modid, name=ModVars.name, version=ModVars.version)
-@NetworkMod(
-        clientSideRequired=true, serverSideRequired=true,
-        clientPacketHandlerSpec=@NetworkMod.SidedPacketHandler(
-                channels={Packet.CHANNEL}, packetHandler=ClientPacketHandler.class),
-        serverPacketHandlerSpec=@NetworkMod.SidedPacketHandler(
-                channels={Packet.CHANNEL}, packetHandler=ServerPacketHandler.class))
+
 public class CMAuth {
   
     /** Mod main class instance. */
-    @Mod.Instance("CMAuth")
+    @Mod.Instance("KratzAuth")
     public static CMAuth INSTANCE;
+
+    /** Minecraft networking wrapper. */
+    public static SimpleNetworkWrapper CHANNEL;
 
     /** Server and client proxies. */
     @SidedProxy(clientSide="mc.client.ClientProxy", serverSide="mc.server.ServerProxy")
@@ -37,6 +36,8 @@ public class CMAuth {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent e) {
+        Logger.log(LogLevel.INFO, "initializing mod");
+        CHANNEL = NetworkRegistry.INSTANCE.newSimpleChannel("KratzAuth");
         // Server configuration and database lookup initialization.
         if (e.getSide().isServer()) {
             ServerConfig.init(e);

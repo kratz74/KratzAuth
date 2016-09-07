@@ -3,46 +3,42 @@
  */
 package mc.server;
 
-import cpw.mods.fml.common.network.IPacketHandler;
-import cpw.mods.fml.common.network.Player;
-import mc.common.Packet;
-import mc.common.PacketContent;
+import cpw.mods.fml.common.network.simpleimpl.IMessage;
+import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
+import cpw.mods.fml.common.network.simpleimpl.MessageContext;
+import mc.common.BCrypt;
+import mc.common.AuthPacketResponse;
 import mc.log.LogLevel;
 import mc.log.Logger;
-import net.minecraft.network.INetworkManager;
-import net.minecraft.network.packet.Packet250CustomPayload;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.ChatComponentText;
 
 /**
  * Packet handler on server side.
  */
-public class ServerPacketHandler implements IPacketHandler {
+public class ServerPacketHandler implements IMessageHandler<AuthPacketResponse, IMessage> {
 
     /**
-     * Process incoming packet.
-     * @param inm    Network manager.
-     * @param packet Packet payload.
-     * @param player Player entity.
+     * Process incoming packet on client side.
+     * @param response Authentication response packet.
+     * @param ctx Message context.
+     * @return Value of {@code null}.
      */
     @Override
-    public void onPacketData(INetworkManager inm, Packet250CustomPayload packet, Player player) {
-        PacketContent content = new PacketContent(packet.data);
-        Packet type = content.getType();
-        if (type != null) {
-            switch(type) {
-                case AUTH_RESPONSE:
-                    final String userName = content.getField(1);
-                    final String password = content.getField(2);
-                    Logger.log(LogLevel.INFO,
-                            "Recieved %s packet for user %s with password %s", type.getId(), userName, password);
-                    AuthResponseHandler handler = new AuthResponseHandler(player, password);
-                    handler.handle();
-                    break;
-                default:
-                    Logger.log(LogLevel.INFO, "Recieved %s packet, ignoring it", type.getId());
-            }
+    public IMessage onMessage(AuthPacketResponse response, MessageContext ctx) {
+        final EntityPlayerMP player = ctx.getServerHandler().playerEntity;
+        final String userName = response.getName();
+        final String password = response.getPassword();
+        Logger.log(LogLevel.INFO,
+                "Recieved authentication response for user %s with password %s", userName, password);
+        final String hash = DatabaseLookup.getHash(player.getDisplayName());
+        boolean check = hash != null && BCrypt.checkpw(password, hash);
+        if (check) {
+            player.addChatMessage(new ChatComponentText("Welcome to the Lord of the Rings Minecraft " + player.getDisplayName() + "!"));
         } else {
-            Logger.log(LogLevel.WARNING, "Recieved unknown packet.");
+            player.playerNetServerHandler.kickPlayerFromServer("Wrong user name or password.");
         }
+        return null;
     }
 
 }

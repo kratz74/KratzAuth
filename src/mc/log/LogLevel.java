@@ -80,6 +80,20 @@ public enum LogLevel {
         return name;
     }
 
+    public org.apache.logging.log4j.Level toLog4j() {
+        switch(id) {
+            case 0x0: return org.apache.logging.log4j.Level.ALL;
+            case 0x1: return org.apache.logging.log4j.Level.TRACE;
+            case 0x2: return org.apache.logging.log4j.Level.DEBUG;
+            case 0x3: return org.apache.logging.log4j.Level.INFO;
+            case 0x4: return org.apache.logging.log4j.Level.WARN;
+            case 0x5: return org.apache.logging.log4j.Level.ERROR;
+            case 0x6: return org.apache.logging.log4j.Level.OFF;
+            default:
+                throw new IllegalStateException("Unknown logging level ID.");
+        }
+    }
+
     /**
      * Check if the given level message would be logged under this level.
      * @param level Level to check.

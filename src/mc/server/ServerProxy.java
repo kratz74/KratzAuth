@@ -3,13 +3,16 @@
  */
 package mc.server;
 
-import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.relauncher.Side;
+import mc.common.AuthPacketResponse;
 import mc.common.AuthProxy;
+import static mc.common.CMAuth.CHANNEL;
 import mc.log.LogLevel;
 import mc.log.Logger;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.CommandEvent;
-import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -30,48 +33,48 @@ public class ServerProxy implements AuthProxy {
      */
     public static class CancelEvents {
         
-	@ForgeSubscribe
+	@SubscribeEvent
 	public void playerInteract(PlayerInteractEvent e) {
 		cancel(e);
 	}
 
-	@ForgeSubscribe
+	@SubscribeEvent
 	public void playerHurt(LivingHurtEvent e) {
 		cancel(e);
 	}
 
-	@ForgeSubscribe
+	@SubscribeEvent
 	public void playerAttack(AttackEntityEvent e) {
 		cancel(e);
 	}
 
-	@ForgeSubscribe
+	@SubscribeEvent
 	public void playerInteractEntity(EntityInteractEvent e) {
 		cancel(e);
 	}
 	
-	@ForgeSubscribe
+	@SubscribeEvent
 	public void minecartInterract(MinecartCollisionEvent e) {
 		cancel (e);
 	}
 
-	@ForgeSubscribe
+	@SubscribeEvent
 	public void playerFillBucket(FillBucketEvent e) {
 		cancel(e);
 	}
 
-	@ForgeSubscribe
+	@SubscribeEvent
 	public void playerItemPickup(EntityItemPickupEvent e) {
 		cancel(e);
 	}
 
-	@ForgeSubscribe
+	@SubscribeEvent
 	public void playerChat(ServerChatEvent e) {
 //		if (!((Boolean) Auth.players.get(e.player)).booleanValue())
 //			e.setCanceled(true);
 	}
 
-	@ForgeSubscribe
+	@SubscribeEvent
 	public void playerCmd(CommandEvent e) {
 //		if (Vars.modEnabled) {
 //			if (((e.sender instanceof EntityPlayer))
@@ -98,8 +101,9 @@ public class ServerProxy implements AuthProxy {
     @Override
     public void register() {
         Logger.log(LogLevel.INFO, "Registering server event handlers");
-        GameRegistry.registerPlayerTracker(new PlayerEvent());
+        FMLCommonHandler.instance().bus().register(new PlayerEvent());
         MinecraftForge.EVENT_BUS.register(new CancelEvents());
+        CHANNEL.registerMessage(ServerPacketHandler.class, AuthPacketResponse.class, 0, Side.SERVER);
     }
 
 }

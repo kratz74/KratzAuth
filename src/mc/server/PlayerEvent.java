@@ -3,54 +3,40 @@
  */
 package mc.server;
 
-import cpw.mods.fml.common.IPlayerTracker;
-import cpw.mods.fml.common.network.PacketDispatcher;
-import cpw.mods.fml.common.network.Player;
-import mc.common.Packet;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
+import mc.common.AuthPacketRequest;
+import static mc.common.CMAuth.CHANNEL;
 import mc.log.LogLevel;
 import mc.log.Logger;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.network.packet.Packet250CustomPayload;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 /**
  * Player events handler.
  */
-public class PlayerEvent implements IPlayerTracker {
+public class PlayerEvent {
+
+    
 
     /**
      * New player logged in.
-     * @param ep Player entity.
+     * @param event Event data.
      */
-    @Override
-    public void onPlayerLogin(EntityPlayer ep) {
-        String name = ep.getEntityName();
-        Logger.log(LogLevel.INFO, "Player %s logged in, sending %s", name, Packet.AUTH_REQEST.getId());
-        Packet250CustomPayload packet = Packet.request(name);
-        PacketDispatcher.sendPacketToPlayer(packet, (Player)ep);
+    @SubscribeEvent
+    public void onPlayerLogin(final PlayerLoggedInEvent event) {
+        final String name = event.player.getDisplayName();
+        final AuthPacketRequest request = new AuthPacketRequest(name);
+        Logger.log(LogLevel.INFO, "Player %s logged in, sending authentication request.", name);
+        CHANNEL.sendTo(request, (EntityPlayerMP)event.player);
     }
 
     /**
      * Player has logged off.
-     * @param ep Player entity.
+     * @param event Event data.
      */
-    @Override
-    public void onPlayerLogout(EntityPlayer ep) {
+    @SubscribeEvent
+    public void onPlayerLogout(final PlayerLoggedOutEvent event) {
     }
 
-    /**
-     * Player has changed dimension.
-     * @param ep Player entity.
-     */
-    @Override
-    public void onPlayerChangedDimension(EntityPlayer ep) {
-    }
-
-    /**
-     * Player has re-spawned.
-     * @param ep Player entity.
-     */
-    @Override
-    public void onPlayerRespawn(EntityPlayer ep) {
-    }
-    
 }

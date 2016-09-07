@@ -130,6 +130,9 @@ public class DatabaseLookup {
         checkConnection();
         Statement stmt = null;
         String hash = null;
+        if (conn == null) {
+            return null;
+        }
         try {
             stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);

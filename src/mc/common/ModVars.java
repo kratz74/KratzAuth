@@ -9,10 +9,10 @@ package mc.common;
 public class ModVars {
 
     /** Mod identifier. */
-    public static final String modid = "CMAuth";
+    public static final String modid = "KratzAuth";
     /** Mod version. */
-    public static final String version = "1.0";
+    public static final String version = "1.1";
     /** Mod name. */
-    public static final String name = "CMAuth";
+    public static final String name = "KratzAuth";
 
 }

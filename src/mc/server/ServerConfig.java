@@ -6,8 +6,8 @@ package mc.server;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import mc.log.LogLevel;
 import mc.log.Logger;
-import net.minecraftforge.common.Configuration;
-import net.minecraftforge.common.Property;
+import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Property;
 
 /**
  * Server configuration.

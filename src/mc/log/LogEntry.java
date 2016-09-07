@@ -23,13 +23,17 @@ public class LogEntry {
     /** Message arguments array. */
     private final Object[] args;
 
+    private final LogLevel level;
+
     /**
      * Creates an instance of logging message with arguments.
+     * @param level   Logging level of the message.
      * @param message    Message string.
      * @param indent     Message indentation.
      * @param args       Message arguments.
      */
-    public LogEntry(final String message, final int indent, final Object[] args) {
+    public LogEntry(final LogLevel level, final String message, final int indent, final Object[] args) {
+        this.level = level;
         this.message = message;
         this.indent = indent;
         this.args = args;
@@ -38,15 +42,25 @@ public class LogEntry {
 
     /**
      * Creates an instance of logging message with exception.
+     * @param level   Logging level of the message.
      * @param message Message string.
      * @param indent  Message indentation.
      * @param ex      Message {@link Exception}.
      */
-    public LogEntry(final String message, final int indent, final Exception ex) {
+    public LogEntry(final LogLevel level, final String message, final int indent, final Exception ex) {
+        this.level = level;
         this.message = message;
         this.indent = indent;
         this.args = null;
         this.ex = ex;
+    }
+
+    /**
+     * Get logging level of the message.
+     * @return Logging level of the message.
+     */
+    public LogLevel getLevel() {
+        return level;
     }
 
     /**
