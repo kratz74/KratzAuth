@@ -3,16 +3,13 @@
  */
 package mc.client;
 
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
-import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
-import cpw.mods.fml.common.network.simpleimpl.MessageContext;
-import cpw.mods.fml.relauncher.Side;
-import mc.common.AuthPacketRequest;
-import mc.common.AuthPacketResponse;
-import mc.common.AuthProxy;
 import static mc.common.CMAuth.CHANNEL;
+
+import mc.common.AuthPacketRequest;
+import mc.common.AuthProxy;
 import mc.log.LogLevel;
 import mc.log.Logger;
+import net.minecraftforge.fml.relauncher.Side;
 
 /**
  * Mod client proxy.

@@ -3,9 +3,10 @@
  */
 package mc.common;
 
-import io.netty.buffer.ByteBuf;
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import java.nio.charset.Charset;
+
+import io.netty.buffer.ByteBuf;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 /**
  * Authentication packet.

@@ -3,12 +3,10 @@
  */
 package mc.server;
 
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.relauncher.Side;
+import static mc.common.CMAuth.CHANNEL;
+
 import mc.common.AuthPacketResponse;
 import mc.common.AuthProxy;
-import static mc.common.CMAuth.CHANNEL;
 import mc.log.LogLevel;
 import mc.log.Logger;
 import net.minecraftforge.common.MinecraftForge;
@@ -18,10 +16,12 @@ import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.minecart.MinecartCollisionEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
-import net.minecraftforge.event.entity.player.EntityInteractEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.FillBucketEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
 
 /**
  * Mod server proxy.
@@ -47,9 +47,8 @@ public class ServerProxy implements AuthProxy {
 	public void playerAttack(AttackEntityEvent e) {
 		cancel(e);
 	}
-
 	@SubscribeEvent
-	public void playerInteractEntity(EntityInteractEvent e) {
+	public void playerInteractEntity(PlayerInteractEvent.EntityInteract e) {
 		cancel(e);
 	}
 	

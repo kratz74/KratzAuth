@@ -3,11 +3,12 @@
  */
 package mc.server;
 
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import mc.log.LogLevel;
 import mc.log.Logger;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
+//import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 /**
  * Server configuration.
@@ -150,21 +151,21 @@ public class ServerConfig {
         config.load();
         config.addCustomCategoryComment(DB_CATEGORY, "Database configuration");
         Property dbHostProp = config.get(DB_CATEGORY, "DbHost", "127.0.0.1");
-        dbHostProp.comment = "Database connection host name or IP";
+        dbHostProp.setComment("Database connection host name or IP");
         Property dbPortProp = config.get(DB_CATEGORY, "DbPort", 3306);
-        dbPortProp.comment = "Database connection port";
+        dbPortProp.setComment("Database connection port");
         Property dbUserProp = config.get(DB_CATEGORY, "DbUser", "myUser");
-        dbUserProp.comment = "Database connection user name";
+        dbUserProp.setComment("Database connection user name");
         Property dbPassProp = config.get(DB_CATEGORY, "DbPassword", "myPassword");
-        dbPassProp.comment = "Database connection user password";
+        dbPassProp.setComment("Database connection user password");
         Property dbNameProp = config.get(DB_CATEGORY, "DbName", "forum");
-        dbNameProp.comment = "Database name";
+        dbNameProp.setComment("Database name");
         Property userTableProp = config.get(DB_CATEGORY, "DbUserTable", "forum_users");
-        userTableProp.comment = "Database table with user credentials";
+        userTableProp.setComment("Database table with user credentials");
         Property userColumnProp = config.get(DB_CATEGORY, "DbUserColumn", "username");
-        userColumnProp.comment = "Database table column with user name";
+        userColumnProp.setComment("Database table column with user name");
         Property passwColumnProp = config.get(DB_CATEGORY, "DbPasswordColumn", "user_password");
-        passwColumnProp.comment = "Database table column with user password";
+        passwColumnProp.setComment("Database table column with user password");
         config.save();
         dbHost = dbHostProp.getString();
         dbPort = dbPortProp.getInt();

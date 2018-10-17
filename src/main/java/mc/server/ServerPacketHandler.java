@@ -3,15 +3,16 @@
  */
 package mc.server;
 
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
-import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
-import cpw.mods.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import mc.common.BCrypt;
 import mc.common.AuthPacketResponse;
 import mc.log.LogLevel;
 import mc.log.Logger;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.ChatComponentText;
+//import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.text.TextComponentString;
 
 /**
  * Packet handler on server side.
@@ -26,17 +27,17 @@ public class ServerPacketHandler implements IMessageHandler<AuthPacketResponse, 
      */
     @Override
     public IMessage onMessage(AuthPacketResponse response, MessageContext ctx) {
-        final EntityPlayerMP player = ctx.getServerHandler().playerEntity;
+        final EntityPlayerMP player = ctx.getServerHandler().player;
         final String userName = response.getName();
         final String password = response.getPassword();
         Logger.log(LogLevel.INFO,
                 "Recieved authentication response for user %s with password %s", userName, password);
-        final String hash = DatabaseLookup.getHash(player.getDisplayName());
+        final String hash = DatabaseLookup.getHash(player.getDisplayNameString());
         boolean check = hash != null && BCrypt.checkpw(password, hash);
         if (check) {
-            player.addChatMessage(new ChatComponentText("Welcome to the Lord of the Rings Minecraft " + player.getDisplayName() + "!"));
+            player.sendMessage(new TextComponentString("Welcome to the Lord of the Rings Minecraft " + player.getDisplayName() + "!"));
         } else {
-            player.playerNetServerHandler.kickPlayerFromServer("Wrong user name or password.");
+            player.connection.disconnect(new TextComponentString("Wrong user name or password."));
         }
         return null;
     }

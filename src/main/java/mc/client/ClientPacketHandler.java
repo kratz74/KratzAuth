@@ -3,15 +3,14 @@
  */
 package mc.client;
 
-import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
-import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import mc.common.AuthPacketRequest;
 import mc.common.AuthPacketResponse;
 import mc.log.LogLevel;
 import mc.log.Logger;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityClientPlayerMP;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 /**
  * Packet handler on client side.
@@ -32,8 +31,8 @@ public class ClientPacketHandler implements IMessageHandler<AuthPacketRequest, A
      */
     @Override
     public AuthPacketResponse onMessage(AuthPacketRequest request, MessageContext ctx) {
-        EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
-        final String localUserName = player.getDisplayName();
+        EntityPlayerSP player = Minecraft.getMinecraft().player;
+        final String localUserName = player.getDisplayNameString();
         final String requestUserName = request.getName();
         Logger.log(LogLevel.INFO, "Recieved authentication request for user %s", requestUserName);
         if (localUserName != null && localUserName.equals(requestUserName)) {

@@ -3,7 +3,7 @@
  */
 package mc.log;
 
-import cpw.mods.fml.common.FMLLog;
+import net.minecraftforge.fml.common.FMLLog;
 
 /**
  * Logger.
