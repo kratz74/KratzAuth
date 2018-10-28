@@ -17,6 +17,9 @@ public class ServerConfig {
     /** Configuration category for database. */
     private static final String DB_CATEGORY = "database";
 
+    /** Configuration category for MOTD. */
+    private static final String LOGIN = "login";
+
     /** Configuration instance. */
     private static ServerConfig INSTANCE;
 
@@ -109,6 +112,47 @@ public class ServerConfig {
     }
 
     /**
+     * Check whether users authentication is enabled.
+     * @return Value of {@code true} if users authentication is enabled or {@code false} otherwise.
+     */
+    public static boolean isEnabled() {
+        return INSTANCE.enable;
+    }
+
+    /**
+     * Get server welcome message after successful login.
+     * @return Server welcome message.
+     */
+    public static String getWelcomeMessage() {
+        if (INSTANCE == null) {
+            throw new IllegalStateException("Server configuration is not yet available");
+        }
+        return INSTANCE.welcomeMessage;
+    }
+
+    /**
+     * Get server welcome info after successful login.
+     * @return Server welcome info.
+     */
+    public static String getWelcomeInfo() {
+        if (INSTANCE == null) {
+            throw new IllegalStateException("Server configuration is not yet available");
+        }
+        return INSTANCE.welcomeInfo;
+    }
+
+    /**
+     * Get server kick message after login failure.
+     * @return Server kick message.
+     */
+    public static String getKickMessage() {
+        if (INSTANCE == null) {
+            throw new IllegalStateException("Server configuration is not yet available");
+        }
+        return INSTANCE.kickMessage;
+    }
+
+    /**
      * Initialize server configuration.
      * @param e Pre-initialization event.
      */
@@ -140,6 +184,18 @@ public class ServerConfig {
     /** Database table column with user password. */
     private final String dbPasswordColumn;
 
+    /** Enable/disable users authentication. */
+    private final boolean enable;
+
+    /** Welcome message after successful login. */
+    private final String welcomeMessage;
+
+    /** Welcome information after successful login. */
+    private final String welcomeInfo;
+
+    /** Kick message after login failure. */
+    private final String kickMessage;
+
     /**
      * Creates an instance of server configuration object.
      * @param e Pre-initialization event.
@@ -149,22 +205,35 @@ public class ServerConfig {
         Logger.log(LogLevel.INFO, "Loading server configuration");
         config.load();
         config.addCustomCategoryComment(DB_CATEGORY, "Database configuration");
-        Property dbHostProp = config.get(DB_CATEGORY, "DbHost", "127.0.0.1");
+        final Property dbHostProp = config.get(DB_CATEGORY, "DbHost", "127.0.0.1");
         dbHostProp.comment = "Database connection host name or IP";
-        Property dbPortProp = config.get(DB_CATEGORY, "DbPort", 3306);
+        final Property dbPortProp = config.get(DB_CATEGORY, "DbPort", 3306);
         dbPortProp.comment = "Database connection port";
-        Property dbUserProp = config.get(DB_CATEGORY, "DbUser", "myUser");
+        final Property dbUserProp = config.get(DB_CATEGORY, "DbUser", "myUser");
         dbUserProp.comment = "Database connection user name";
-        Property dbPassProp = config.get(DB_CATEGORY, "DbPassword", "myPassword");
+        final Property dbPassProp = config.get(DB_CATEGORY, "DbPassword", "myPassword");
         dbPassProp.comment = "Database connection user password";
-        Property dbNameProp = config.get(DB_CATEGORY, "DbName", "forum");
+        final Property dbNameProp = config.get(DB_CATEGORY, "DbName", "forum");
         dbNameProp.comment = "Database name";
-        Property userTableProp = config.get(DB_CATEGORY, "DbUserTable", "forum_users");
+        final Property userTableProp = config.get(DB_CATEGORY, "DbUserTable", "forum_users");
         userTableProp.comment = "Database table with user credentials";
-        Property userColumnProp = config.get(DB_CATEGORY, "DbUserColumn", "username");
+        final Property userColumnProp = config.get(DB_CATEGORY, "DbUserColumn", "username");
         userColumnProp.comment = "Database table column with user name";
-        Property passwColumnProp = config.get(DB_CATEGORY, "DbPasswordColumn", "user_password");
+        final Property passwColumnProp = config.get(DB_CATEGORY, "DbPasswordColumn", "user_password");
         passwColumnProp.comment = "Database table column with user password";
+        final Property enableProp;
+        if (e.getSide().isServer()) {
+            enableProp = config.get(DB_CATEGORY, "Enabled", "true");
+            enableProp.comment = "Enable/disable users authentication";
+        } else {
+            enableProp = null;
+        }
+        final Property welcomeMessageProp = config.get(LOGIN, "WelcomeMessage", "Welcome to the Lord of the Rings Minecraft");
+        welcomeMessageProp.comment = "Welcome message to display on login";
+        final Property welcomeInfoProp = config.get(LOGIN, "WelcomeInfo", "Check http://www.carovnak.cz for news.");
+        welcomeInfoProp.comment = "Welcome information to display on login";
+        final Property kickMessageProp = config.get(LOGIN, "KickMessage", "Wrong user name or password. Check your registration on http://www.carovnak.cz web.");
+        kickMessageProp.comment = "Kick message after login failure";
         config.save();
         dbHost = dbHostProp.getString();
         dbPort = dbPortProp.getInt();
@@ -174,8 +243,16 @@ public class ServerConfig {
         dbTable = userTableProp.getString();
         dbUserColumn = userColumnProp.getString();
         dbPasswordColumn = passwColumnProp.getString();
+        // Null on clients side means users authentication is always enabled.
+        enable = enableProp != null ? enableProp.getBoolean() : true;
+        welcomeMessage = welcomeMessageProp.getString();
+        welcomeInfo = welcomeInfoProp.getString();
+        kickMessage = kickMessageProp.getString();
         Logger.log(LogLevel.INFO, 1, "Database %s on %s@%s:%d", dbName, dbUser, dbHost, dbPort);
         Logger.log(LogLevel.INFO, 1, "Table: %s, users: %s, passwords: %s", dbTable, dbUserColumn, dbPasswordColumn);
+        Logger.log(LogLevel.INFO, 1, "Welcome message: %s", welcomeMessage);
+        Logger.log(LogLevel.INFO, 1, "Welcome info: %s", welcomeInfo);
+        Logger.log(LogLevel.INFO, 1, "Kick message: %s", kickMessage);
     }
 
 }

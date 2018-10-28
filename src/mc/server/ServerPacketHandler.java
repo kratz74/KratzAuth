@@ -10,6 +10,7 @@ import mc.common.BCrypt;
 import mc.common.AuthPacketResponse;
 import mc.log.LogLevel;
 import mc.log.Logger;
+import mc.utils.PasswordUtils;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentText;
 
@@ -28,15 +29,27 @@ public class ServerPacketHandler implements IMessageHandler<AuthPacketResponse, 
     public IMessage onMessage(AuthPacketResponse response, MessageContext ctx) {
         final EntityPlayerMP player = ctx.getServerHandler().playerEntity;
         final String userName = response.getName();
-        final String password = response.getPassword();
-        Logger.log(LogLevel.INFO,
+        final String encryptedPassword = response.getPassword();
+        final String password = new String(PasswordUtils.decrypt(encryptedPassword));
+        boolean passed = false;
+        Logger.log(LogLevel.FINEST,
                 "Recieved authentication response for user %s with password %s", userName, password);
-        final String hash = DatabaseLookup.getHash(player.getDisplayName());
-        boolean check = hash != null && BCrypt.checkpw(password, hash);
-        if (check) {
-            player.addChatMessage(new ChatComponentText("Welcome to the Lord of the Rings Minecraft " + player.getDisplayName() + "!"));
+        if (!ServerConfig.isEnabled()) {
+            Logger.log(LogLevel.FINE, "Skipping authentization of " + player.getDisplayName());
+            passed = true;
         } else {
-            player.playerNetServerHandler.kickPlayerFromServer("Wrong user name or password.");
+             final String hash = DatabaseLookup.getHash(player.getDisplayName());
+             passed = hash != null && BCrypt.checkpw(password, hash);
+             Logger.log(LogLevel.FINE,
+                     "Credentials check of user " + player.getDisplayName() + (passed ? "passed" : "failed"));
+        }
+        final String hash = DatabaseLookup.getHash(player.getDisplayName());
+        if (passed) {
+            player.addChatMessage(new ChatComponentText(
+                    ServerConfig.getWelcomeMessage() + " " + player.getDisplayName() + "!"));
+            player.addChatMessage(new ChatComponentText(ServerConfig.getWelcomeInfo()));
+        } else {
+            player.playerNetServerHandler.kickPlayerFromServer(ServerConfig.getKickMessage());
         }
         return null;
     }
