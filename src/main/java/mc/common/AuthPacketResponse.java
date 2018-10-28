@@ -4,6 +4,8 @@
 package mc.common;
 
 import io.netty.buffer.ByteBuf;
+import mc.log.LogLevel;
+import mc.log.Logger;
 
 /**
  * Authentication packet response.
@@ -45,8 +47,10 @@ public class AuthPacketResponse extends AuthPacket {
         super.toBytes(buffer);
         final byte[] nameBytes = password != null ? password.getBytes(CHARSET) : null;
         buffer.writeInt(nameBytes != null ? nameBytes.length : 0);
+        Logger.log(LogLevel.FINE, "AuthPacketResponse to: length: " + (nameBytes != null ? nameBytes.length : 0));
         if (password != null) {
             buffer.writeBytes(nameBytes);
+            Logger.log(LogLevel.FINE, "AuthPacketResponse to: password bytes: " + nameBytes.length);
         }
     }
 
@@ -58,6 +62,7 @@ public class AuthPacketResponse extends AuthPacket {
     public void fromBytes(ByteBuf buffer) {
         super.fromBytes(buffer);
         final int len = buffer.readInt();
+        Logger.log(LogLevel.FINE, "AuthPacketResponse from: length: " + len);
         if (len > 0) {
             final byte[] nameBytes = new byte[len];
             buffer.readBytes(nameBytes);

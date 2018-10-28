@@ -18,6 +18,9 @@ package mc.common;
 import java.io.UnsupportedEncodingException;
 import java.security.SecureRandom;
 
+import mc.log.LogLevel;
+import mc.log.Logger;
+
 /**
  * BCrypt implements OpenBSD-style Blowfish password hashing using
  * the scheme described in "A Future-Adaptable Password Scheme" by
@@ -763,6 +766,7 @@ public class BCrypt {
 		byte hashed_bytes[];
 		byte try_bytes[];
 		try {
+			Logger.log(LogLevel.FINEST, "User pw %s hash %s", plaintext, hashed);
 			String try_pw = hashpw(plaintext, hashed);
 			hashed_bytes = hashed.getBytes("UTF-8");
 			try_bytes = try_pw.getBytes("UTF-8");

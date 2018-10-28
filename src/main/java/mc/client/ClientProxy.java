@@ -6,7 +6,9 @@ package mc.client;
 import static mc.common.CMAuth.CHANNEL;
 
 import mc.common.AuthPacketRequest;
+import mc.common.AuthPacketResponse;
 import mc.common.AuthProxy;
+import mc.common.CMAuth;
 import mc.log.LogLevel;
 import mc.log.Logger;
 import net.minecraftforge.fml.relauncher.Side;
@@ -22,8 +24,8 @@ public class ClientProxy implements AuthProxy {
     @Override
     public void register() {
         Logger.log(LogLevel.INFO, "Registering client event handlers");
-        CHANNEL.registerMessage(ClientPacketHandler.class, AuthPacketRequest.class, 0, Side.CLIENT);
-        //CHANNEL.registerMessage(DummyPacketHandler.class, AuthPacketResponse.class, 0, Side.CLIENT);
+        CHANNEL.registerMessage(ClientRequestPacketHandler.class, AuthPacketRequest.class, CMAuth.REQUEST_CHANNEL_ID, Side.CLIENT);
+        CHANNEL.registerMessage(ClientResponsePacketHandler.class, AuthPacketResponse.class, CMAuth.RESPONSE_CHANNEL_ID, Side.CLIENT);
     }
 
 }

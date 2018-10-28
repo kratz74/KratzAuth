@@ -9,9 +9,9 @@ package mc.common;
 public class ModVars {
 
     /** Mod identifier. */
-    public static final String modid = "KratzAuth";
+    public static final String modid = "kratzauth";
     /** Mod version. */
-    public static final String version = "1.1";
+    public static final String version = "1.3";
     /** Mod name. */
     public static final String name = "KratzAuth";
 

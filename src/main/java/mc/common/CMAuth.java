@@ -29,6 +29,10 @@ public class CMAuth {
 
     /** Minecraft networking wrapper. */
     public static SimpleNetworkWrapper CHANNEL;
+    /** Auth channel discriminator for request. */
+    public static int REQUEST_CHANNEL_ID = 0x00;
+    /** Auth channel discriminator for response. */
+    public static int RESPONSE_CHANNEL_ID = 0x01;
 
     /** Server and client proxies. */
     @SidedProxy(clientSide="mc.client.ClientProxy", serverSide="mc.server.ServerProxy")

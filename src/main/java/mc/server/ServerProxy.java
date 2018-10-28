@@ -5,8 +5,10 @@ package mc.server;
 
 import static mc.common.CMAuth.CHANNEL;
 
+import mc.common.AuthPacketRequest;
 import mc.common.AuthPacketResponse;
 import mc.common.AuthProxy;
+import mc.common.CMAuth;
 import mc.log.LogLevel;
 import mc.log.Logger;
 import net.minecraftforge.common.MinecraftForge;
@@ -102,7 +104,8 @@ public class ServerProxy implements AuthProxy {
         Logger.log(LogLevel.INFO, "Registering server event handlers");
         FMLCommonHandler.instance().bus().register(new PlayerEvent());
         MinecraftForge.EVENT_BUS.register(new CancelEvents());
-        CHANNEL.registerMessage(ServerPacketHandler.class, AuthPacketResponse.class, 0, Side.SERVER);
+        CHANNEL.registerMessage(ServerResponsePacketHandler.class, AuthPacketResponse.class, CMAuth.RESPONSE_CHANNEL_ID, Side.SERVER);
+        CHANNEL.registerMessage(ServerRequestPacketHandler.class, AuthPacketRequest.class, CMAuth.REQUEST_CHANNEL_ID, Side.SERVER);
     }
 
 }

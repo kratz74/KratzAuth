@@ -6,6 +6,8 @@ package mc.common;
 import java.nio.charset.Charset;
 
 import io.netty.buffer.ByteBuf;
+import mc.log.LogLevel;
+import mc.log.Logger;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 /**
@@ -42,7 +44,9 @@ public class AuthPacket implements IMessage {
     public void toBytes(ByteBuf buffer) {
         final byte[] nameBytes = name.getBytes(CHARSET);
         buffer.writeInt(nameBytes.length);
+        Logger.log(LogLevel.FINE, "AuthPacket to: length: " + nameBytes.length);
         buffer.writeBytes(nameBytes);
+        Logger.log(LogLevel.FINE, "AuthPacket to: name: " + name);
     }
 
     /**
@@ -52,8 +56,9 @@ public class AuthPacket implements IMessage {
     @Override
     public void fromBytes(ByteBuf buffer) {
         final int len = buffer.readInt();
+        Logger.log(LogLevel.FINE, "AuthPacket from: length: " + len);
         final byte[] nameBytes = new byte[len];
-        buffer.readBytes(nameBytes);
+        buffer.readBytes(nameBytes, 0, len);
         name = new String(nameBytes, CHARSET);
     }
 
