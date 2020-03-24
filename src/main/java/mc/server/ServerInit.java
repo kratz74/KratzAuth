@@ -4,10 +4,13 @@
 package mc.server;
 
 import static mc.common.CMAuth.CHANNEL;
+import static net.minecraftforge.fml.network.NetworkDirection.PLAY_TO_SERVER;
+
+import java.util.Optional;
 
 import mc.common.AuthPacketRequest;
 import mc.common.AuthPacketResponse;
-import mc.common.AuthProxy;
+import mc.common.AuthInit;
 import mc.common.CMAuth;
 import mc.log.LogLevel;
 import mc.log.Logger;
@@ -16,19 +19,18 @@ import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.minecart.MinecartCollisionEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.FillBucketEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.loading.FMLCommonLaunchHandler;
+import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 /**
  * Mod server proxy.
  */
-public class ServerProxy implements AuthProxy {
+public class ServerInit implements AuthInit {
     
     /**
      * Cancel player events.
@@ -54,11 +56,6 @@ public class ServerProxy implements AuthProxy {
 		cancel(e);
 	}
 	
-	@SubscribeEvent
-	public void minecartInterract(MinecartCollisionEvent e) {
-		cancel (e);
-	}
-
 	@SubscribeEvent
 	public void playerFillBucket(FillBucketEvent e) {
 		cancel(e);
@@ -100,12 +97,16 @@ public class ServerProxy implements AuthProxy {
      * Register server event handlers.
      */
     @Override
-    public void register() {
+    public void register(SimpleChannel channel) {
         Logger.log(LogLevel.INFO, "Registering server event handlers");
-        FMLCommonHandler.instance().bus().register(new PlayerEvent());
+        MinecraftForge.EVENT_BUS.register(new PlayerEvent());
         MinecraftForge.EVENT_BUS.register(new CancelEvents());
-        CHANNEL.registerMessage(ServerResponsePacketHandler.class, AuthPacketResponse.class, CMAuth.RESPONSE_CHANNEL_ID, Side.SERVER);
-        CHANNEL.registerMessage(ServerRequestPacketHandler.class, AuthPacketRequest.class, CMAuth.REQUEST_CHANNEL_ID, Side.SERVER);
+        CHANNEL.registerMessage(AuthPacketResponse.ID, AuthPacketResponse.class,
+        		AuthPacketResponse::encode, AuthPacketResponse::decode,
+        		ServerMessagesHandler::onResponse, Optional.of(PLAY_TO_SERVER));
+        CHANNEL.registerMessage(AuthPacketRequest.ID, AuthPacketRequest.class,
+        		AuthPacketRequest::encode, AuthPacketRequest::decode,
+        		ServerMessagesHandler::onRequest, Optional.of(PLAY_TO_SERVER));
     }
 
 }

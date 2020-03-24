@@ -8,10 +8,12 @@ import static mc.common.CMAuth.CHANNEL;
 import mc.common.AuthPacketRequest;
 import mc.log.LogLevel;
 import mc.log.Logger;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 /**
  * Player events handler.
@@ -24,10 +26,11 @@ public class PlayerEvent {
      */
     @SubscribeEvent
     public void onPlayerLogin(final PlayerLoggedInEvent event) {
-        final String name = event.player.getDisplayNameString();
+    	final PlayerEntity player = event.getPlayer();
+        final String name = player.getDisplayName().getString();
         final AuthPacketRequest request = new AuthPacketRequest(name);
         Logger.log(LogLevel.INFO, "Player %s logged in, sending authentication request.", name);
-        CHANNEL.sendTo(request, (EntityPlayerMP)event.player);
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity)player), request);
     }
 
     /**

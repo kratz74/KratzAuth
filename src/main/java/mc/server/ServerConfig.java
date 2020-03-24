@@ -5,10 +5,9 @@ package mc.server;
 
 import mc.log.LogLevel;
 import mc.log.Logger;
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
-//import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
 
 /**
  * Server configuration.
@@ -154,9 +153,12 @@ public class ServerConfig {
      * Initialize server configuration.
      * @param e Pre-initialization event.
      */
-    public static void init(FMLPreInitializationEvent e) {
+    public static void init(ModConfig.ModConfigEvent e) {
         INSTANCE = new ServerConfig(e);
     }
+
+    private final ForgeConfigSpec spec;
+    private final ForgeConfigSpec.IntValue versionSpec;
 
     /** Database connection host name or IP. */
     private final String dbHost;
@@ -198,54 +200,67 @@ public class ServerConfig {
      * Creates an instance of server configuration object.
      * @param e Pre-initialization event.
      */
-    private ServerConfig(FMLPreInitializationEvent e) {
-        Configuration config = new Configuration(e.getSuggestedConfigurationFile());
-        Logger.log(LogLevel.INFO, "Loading server configuration");
-        config.load();
-        config.addCustomCategoryComment(DB_CATEGORY, "Database configuration");
-        Property dbHostProp = config.get(DB_CATEGORY, "DbHost", "127.0.0.1");
-        dbHostProp.setComment("Database connection host name or IP");
-        Property dbPortProp = config.get(DB_CATEGORY, "DbPort", 3306);
-        dbPortProp.setComment("Database connection port");
-        Property dbUserProp = config.get(DB_CATEGORY, "DbUser", "myUser");
-        dbUserProp.setComment("Database connection user name");
-        Property dbPassProp = config.get(DB_CATEGORY, "DbPassword", "myPassword");
-        dbPassProp.setComment("Database connection user password");
-        Property dbNameProp = config.get(DB_CATEGORY, "DbName", "forum");
-        dbNameProp.setComment("Database name");
-        Property userTableProp = config.get(DB_CATEGORY, "DbUserTable", "forum_users");
-        userTableProp.setComment("Database table with user credentials");
-        Property userColumnProp = config.get(DB_CATEGORY, "DbUserColumn", "username");
-        userColumnProp.setComment("Database table column with user name");
-        Property passwColumnProp = config.get(DB_CATEGORY, "DbPasswordColumn", "user_password");
-        passwColumnProp.setComment("Database table column with user password");
-        final Property enableProp;
-        if (e.getSide().isServer()) {
-            enableProp = config.get(DB_CATEGORY, "Enabled", "true");
-            enableProp.setComment("Enable/disable users authentication");
-        } else {
-            enableProp = null;
-        }
-        final Property welcomeMessageProp = config.get(LOGIN, "WelcomeMessage", "Welcome to the Lord of the Rings Minecraft");
-        welcomeMessageProp.setComment("Welcome message to display on login");
-        final Property welcomeInfoProp = config.get(LOGIN, "WelcomeInfo", "Check http://www.carovnak.cz for news.");
-        welcomeInfoProp.setComment("Welcome information to display on login");
-        final Property kickMessageProp = config.get(LOGIN, "KickMessage", "Wrong user name or password. Check your registration on http://www.carovnak.cz web.");
-        kickMessageProp.setComment("Kick message after login failure");
-        config.save();
-        dbHost = dbHostProp.getString();
-        dbPort = dbPortProp.getInt();
-        dbUser = dbUserProp.getString();
-        dbPassword = dbPassProp.getString();
-        dbName = dbNameProp.getString();
-        dbTable = userTableProp.getString();
-        dbUserColumn = userColumnProp.getString();
-        dbPasswordColumn = passwColumnProp.getString();
+    private ServerConfig(ModConfig.ModConfigEvent e) {
+    	Logger.log(LogLevel.INFO, "Loading server configuration");
+    	ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+    	versionSpec = builder
+    			.comment("Configuration file version number")
+    			.defineInRange("version", 1, 1, 2);
+
+    	ForgeConfigSpec.ConfigValue<String> dbHostCfg = builder
+    			.comment("Database connection host name or IP")
+    			.define("DbHost", "127.0.0.1");
+    	ForgeConfigSpec.ConfigValue<Integer> dbPortCfg = builder
+    			.comment("Database connection port"
+    					).define("DbPort", 3306);
+    	ForgeConfigSpec.ConfigValue<String> dbUserCfg = builder
+    			.comment("Database connection user name")
+    			.define("DbUser", "myUser");
+    	ForgeConfigSpec.ConfigValue<String> dbPasswordCfg = builder
+    			.comment("Database connection user password")
+    			.define("DbPassword", "myPassword");
+    	ForgeConfigSpec.ConfigValue<String> dbNameCfg = builder
+    			.comment("Database name")
+    			.define("DbName", "forum");
+    	ForgeConfigSpec.ConfigValue<String> dbTableCfg = builder
+    			.comment("Database table with user credentials")
+    			.define("DbUserTable", "forum_users");
+    	ForgeConfigSpec.ConfigValue<String> dbUserColumnCfg = builder
+    			.comment("Database table column with user name")
+    			.define("DbUserColumn", "username");
+    	ForgeConfigSpec.ConfigValue<String> dbPasswordColumnCfg = builder
+    			.comment("Database table column with user password")
+    			.define("DbPasswordColumn", "user_password");
+    	ForgeConfigSpec.ConfigValue<Boolean> enableCfg = builder
+    			.comment("Enable/disable users authentication")
+    			.define("Enabled", true);
+    	ForgeConfigSpec.ConfigValue<String> welcomeMessageCfg = builder
+    			.comment("Welcome message to display on login")
+    			.define("WelcomeMessage", "Welcome to the Lord of the Rings Minecraft");
+    	ForgeConfigSpec.ConfigValue<String> welcomeInfoCfg = builder
+    			.comment("Welcome information to display on login")
+    			.define("WelcomeInfo", "Check http://www.carovnak.cz for news.");
+    	ForgeConfigSpec.ConfigValue<String> kickMessageCfg = builder
+    			.comment("Kick message after login failure")
+    			.define("KickMessage", "Wrong user name or password. Check your registration on http://www.carovnak.cz web.");
+
+    	builder.pop();
+    	spec = builder.build();
+    	spec.save();
+
+        dbHost = dbHostCfg.get();
+        dbPort = dbPortCfg.get();
+        dbUser = dbUserCfg.get();
+        dbPassword = dbPasswordCfg.get();
+        dbName = dbNameCfg.get();
+        dbTable = dbUserColumnCfg.get();
+        dbUserColumn = dbUserColumnCfg.get();
+        dbPasswordColumn = dbPasswordColumnCfg.get();
         // Null on clients side means users authentication is always enabled.
-        enable = enableProp != null ? enableProp.getBoolean() : true;
-        welcomeMessage = welcomeMessageProp.getString();
-        welcomeInfo = welcomeInfoProp.getString();
-        kickMessage = kickMessageProp.getString();
+        enable = enableCfg != null ? enableCfg.get() : true;
+        welcomeMessage = welcomeMessageCfg.get();
+        welcomeInfo = welcomeInfoCfg.get();
+        kickMessage = kickMessageCfg.get();
         Logger.log(LogLevel.INFO, 1, "Database %s on %s@%s:%d", dbName, dbUser, dbHost, dbPort);
         Logger.log(LogLevel.INFO, 1, "Table: %s, users: %s, passwords: %s", dbTable, dbUserColumn, dbPasswordColumn);
         Logger.log(LogLevel.INFO, 1, "Welcome message: %s", welcomeMessage);

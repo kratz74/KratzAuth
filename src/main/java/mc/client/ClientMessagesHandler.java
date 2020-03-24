@@ -1,20 +1,24 @@
 /*
- * (C) 2016 Tomas Kraus
+ * (C) 2020 Tomas Kraus
  */
 package mc.client;
 
+import static mc.common.CMAuth.CHANNEL;
+
+import java.util.function.Supplier;
+
 import mc.common.AuthPacketRequest;
 import mc.common.AuthPacketResponse;
+import mc.common.CMAuth;
 import mc.log.LogLevel;
 import mc.log.Logger;
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.network.NetworkEvent;
 
 /**
- * Packet handler on client side.
+ * Messages handler on client side.
  */
-public class ClientRequestPacketHandler implements IMessageHandler<AuthPacketRequest, AuthPacketResponse> {
+public class ClientMessagesHandler {
 
 	/** Name of property containing user name. */
 	private static final String USER_PROPERTY = "mc.user";
@@ -26,20 +30,23 @@ public class ClientRequestPacketHandler implements IMessageHandler<AuthPacketReq
 	/** Encrypted password received from property. */
 	private static final String PASSWORD = System.getProperty(PASSWORD_PROPERTY);
 
+	public static boolean checkProtocol(String protocolVersion) {
+		return CMAuth.CHANNEL_PROTOCOL_VERSION.equals(protocolVersion);
+	}
+
+
 	/**
-	 * Process incoming packet on client side.
+	 * Process incoming request packet on client side.
 	 *
 	 * @param request Authentication request packet.
 	 * @param ctx Message context.
 	 * @return Authentication response packet.
 	 */
-	@Override
-	public AuthPacketResponse onMessage(AuthPacketRequest request, MessageContext ctx) {
-		Logger.log(LogLevel.INFO, Minecraft.getMinecraft().toString());
+	public static void onRequest(final AuthPacketRequest request, Supplier<NetworkEvent.Context> ctxSupplier) {
 		final String requestUserName = request.getName();
 		Logger.log(LogLevel.INFO, "Recieved authentication request for user %s", requestUserName);
 		int count = 0;
-		while (Minecraft.getMinecraft().player == null && count < 60) {
+		while (Minecraft.getInstance().player == null && count < 60) {
 			count++;
 			try {
 				Thread.sleep(1000);
@@ -49,11 +56,22 @@ public class ClientRequestPacketHandler implements IMessageHandler<AuthPacketReq
 		}
 		if (USER != null && USER.equals(requestUserName)) {
 			Logger.log(LogLevel.INFO, "Sending auth reponse as user %s with password %s", USER, PASSWORD);
-			return new AuthPacketResponse(USER, PASSWORD);
+			CHANNEL.sendToServer(new AuthPacketResponse(USER, PASSWORD));
 		} else {
 			Logger.log(LogLevel.WARNING, "User from request does not match local user");
-			return new AuthPacketResponse(USER, null);
+			CHANNEL.sendToServer(new AuthPacketResponse(USER, null));
 		}
+	}
+
+	/**
+     * Process incoming response packet on server side.
+     * @param response Authentication response packet.
+     * @param ctx Message context.
+     * @return Value of {@code null}.
+     */
+	public static void onResponse(AuthPacketResponse request, Supplier<NetworkEvent.Context> ctxSupplier) {
+		final String userName = request.getName();
+		Logger.log(LogLevel.INFO, "[ERROR] Recieved authentication response for user %s", userName);
 	}
 
 }

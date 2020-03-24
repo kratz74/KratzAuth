@@ -5,15 +5,14 @@ package mc.common;
 
 import java.nio.charset.Charset;
 
-import io.netty.buffer.ByteBuf;
 import mc.log.LogLevel;
 import mc.log.Logger;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraft.network.PacketBuffer;
 
 /**
  * Authentication packet.
  */
-public class AuthPacket implements IMessage {
+public class AuthPacket {
 
     /** String characters set. */
     protected static final Charset CHARSET = Charset.forName("UTF-8");
@@ -40,26 +39,24 @@ public class AuthPacket implements IMessage {
      * Writes packet data to the buffer.
      * @param buffer Data target buffer.
      */
-    @Override
-    public void toBytes(ByteBuf buffer) {
-        final byte[] nameBytes = name.getBytes(CHARSET);
+    public static void encode(final AuthPacket msg, PacketBuffer buffer) {
+        final byte[] nameBytes = msg.name.getBytes(CHARSET);
         buffer.writeInt(nameBytes.length);
         Logger.log(LogLevel.FINE, "AuthPacket to: length: " + nameBytes.length);
         buffer.writeBytes(nameBytes);
-        Logger.log(LogLevel.FINE, "AuthPacket to: name: " + name);
+        Logger.log(LogLevel.FINE, "AuthPacket to: name: " + msg.name);
     }
 
     /**
      * Reads packet data from the buffer.
      * @param buffer Data target buffer.
      */
-    @Override
-    public void fromBytes(ByteBuf buffer) {
+    protected static String decodeName(PacketBuffer buffer) {
         final int len = buffer.readInt();
         Logger.log(LogLevel.FINE, "AuthPacket from: length: " + len);
         final byte[] nameBytes = new byte[len];
         buffer.readBytes(nameBytes, 0, len);
-        name = new String(nameBytes, CHARSET);
+        return new String(nameBytes, CHARSET);
     }
 
 }

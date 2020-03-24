@@ -3,7 +3,8 @@
  */
 package mc.log;
 
-import net.minecraftforge.fml.common.FMLLog;
+import org.apache.logging.log4j.LogManager;
+
 
 /**
  * Logger.
@@ -13,6 +14,8 @@ public class Logger {
 
     /** Logger singleton instance. */
     private static final Logger INSTANCE = new Logger();
+
+    private static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger();
 
     /**
      * Get logger instance.
@@ -141,7 +144,7 @@ public class Logger {
      */
     private void log(final LogEntry entry) {
         //System.out.println(entry.format());
-        FMLLog.log(entry.getLevel().toLog4j(), entry.format());
+    	LOGGER.log(entry.getLevel().toLog4j(), entry.format());
     }
 
 }

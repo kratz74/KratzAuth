@@ -3,16 +3,19 @@
  */
 package mc.common;
 
-import io.netty.buffer.ByteBuf;
 import mc.log.LogLevel;
 import mc.log.Logger;
+import net.minecraft.network.PacketBuffer;
 
 /**
  * Authentication packet response.
  */
 public class AuthPacketResponse extends AuthPacket {
 
-    /** Player encrypted password. */
+	/** Channel Message ID. */
+	public static final byte ID = 0x02;
+
+	/** Player encrypted password. */
     private String password;
 
     /**
@@ -42,13 +45,12 @@ public class AuthPacketResponse extends AuthPacket {
      * Writes packet data to the buffer.
      * @param buffer Data target buffer.
      */
-    @Override
-    public void toBytes(ByteBuf buffer) {
-        super.toBytes(buffer);
-        final byte[] nameBytes = password != null ? password.getBytes(CHARSET) : null;
+    public static void encode(final AuthPacketResponse msg, PacketBuffer buffer) {
+    	AuthPacket.encode(msg, buffer);
+        final byte[] nameBytes = msg.password != null ? msg.password.getBytes(CHARSET) : null;
         buffer.writeInt(nameBytes != null ? nameBytes.length : 0);
         Logger.log(LogLevel.FINE, "AuthPacketResponse to: length: " + (nameBytes != null ? nameBytes.length : 0));
-        if (password != null) {
+        if (msg.password != null) {
             buffer.writeBytes(nameBytes);
             Logger.log(LogLevel.FINE, "AuthPacketResponse to: password bytes: " + nameBytes.length);
         }
@@ -58,11 +60,11 @@ public class AuthPacketResponse extends AuthPacket {
      * Reads packet data from the buffer.
      * @param buffer Data target buffer.
      */
-    @Override
-    public void fromBytes(ByteBuf buffer) {
-        super.fromBytes(buffer);
+    public static AuthPacketResponse decode(PacketBuffer buffer) {
+    	final String name = decodeName(buffer);
         final int len = buffer.readInt();
         Logger.log(LogLevel.FINE, "AuthPacketResponse from: length: " + len);
+        final String password;
         if (len > 0) {
             final byte[] nameBytes = new byte[len];
             buffer.readBytes(nameBytes);
@@ -70,6 +72,7 @@ public class AuthPacketResponse extends AuthPacket {
         } else {
             password = null;
         }
+        return new AuthPacketResponse(name, password);
     }
 
 }
