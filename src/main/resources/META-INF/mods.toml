@@ -1,0 +1,20 @@
+modLoader="javafml"
+loaderVersion="[24,)"
+issueTrackerURL="https://github.com/kratz74/KratzAuth/issues"
+
+[[mods]]
+    modId="kratzauth"
+    namespace="kratz"
+    version="1.4"
+    displayName="KratzAuth"
+    authors="Kratz"
+    description='''
+Authentization mod for carovnak.cz servers
+    '''
+    displayURL="https://github.com/kratz74/KratzAuth"
+    [[dependencies.ironchest]]
+        modId="forge"
+        mandatory=true
+        versionRange="[1.14,1.16)"
+        ordering="NONE"
+        side="BOTH"

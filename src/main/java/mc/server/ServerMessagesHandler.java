@@ -48,22 +48,28 @@ public class ServerMessagesHandler {
 		final ServerPlayerEntity player = ctx.getSender();
 		final String userName = response.getName();
 		final String encryptedPassword = response.getPassword();
-		final String password = new String(PasswordUtils.decrypt(encryptedPassword));
 		final String playerName = player.getDisplayName().getString();
 		boolean passed = false;
-		Logger.log(LogLevel.FINEST, "Recieved authentication response for user %s with password %s", userName,
-				password);
+		Logger.log(LogLevel.FINEST, "Recieved authentication response for user %s", userName);
 		if (!ServerConfig.isEnabled()) {
 			Logger.log(LogLevel.FINE, "Skipping authentization of " + player.getDisplayName());
 			passed = true;
 		} else {
-			final String hash = DatabaseLookup.getHash(playerName);
-			passed = hash != null && BCrypt.checkpw(password, hash);
-			Logger.log(LogLevel.FINE,
-					"Credentials check of user " + player.getDisplayName() + (passed ? "passed" : "failed"));
+			if (encryptedPassword != null && encryptedPassword.length() > 0) {
+				try {
+				    final String password = new String(PasswordUtils.decrypt(encryptedPassword));
+				    final String hash = DatabaseLookup.getHash(playerName);
+				    passed = hash != null && BCrypt.checkpw(password, hash);
+				    Logger.log(LogLevel.FINE,
+				    		"Credentials check of user " + player.getDisplayName() + (passed ? "passed" : "failed"));
+				} catch (Throwable t) {
+					Logger.log(LogLevel.WARNING, "Password verification failed: %s", t.getMessage());
+				}
+			} else {
+				Logger.log(LogLevel.WARNING, "Password verification failed: missing password from client!");
+			}
 		}
 		if (passed) {
-			player.sendMessage(new StringTextComponent(ServerConfig.getWelcomeMessage() + " " + playerName + "!"));
 			player.sendMessage(new StringTextComponent(ServerConfig.getWelcomeMessage() + " " + playerName + "!"));
 			player.sendMessage(new StringTextComponent(ServerConfig.getWelcomeInfo()));
 		} else {

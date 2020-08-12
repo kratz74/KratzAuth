@@ -15,6 +15,7 @@ import mc.server.ServerInit;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -55,6 +56,8 @@ public class CMAuth {
     	MOD_EVENT_BUS.addListener(this::config);
     	MOD_EVENT_BUS.addListener(this::clientSetup);
     	MOD_EVENT_BUS.addListener(this::serverSetup);
+    	ServerConfig.init();
+    	ServerConfig.register(ModLoadingContext.get());
     }
 
     @SubscribeEvent
@@ -67,10 +70,8 @@ public class CMAuth {
 
     @SubscribeEvent
     public void config(ModConfig.ModConfigEvent e) {
-    	Logger.log(LogLevel.INFO, "Processing configuration event");
-    	if (e.getConfig().getType() == ModConfig.Type.SERVER) {
-        	ServerConfig.init(e);
-    	}
+    	Logger.log(LogLevel.INFO, "Processing configuration event " + e.getConfig().getType());
+    	ServerConfig.log();
     }
     
     @SubscribeEvent 
@@ -86,6 +87,7 @@ public class CMAuth {
     	Logger.log(LogLevel.INFO, "Processing server setup event");
     	init = new ServerInit();
     	init.register(CHANNEL);
+    	ServerConfig.save();
     	DatabaseLookup.init();
     }
 

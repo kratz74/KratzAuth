@@ -11,7 +11,7 @@ public class ModVars {
     /** Mod identifier. */
     public static final String modid = "kratzauth";
     /** Mod version. */
-    public static final String version = "1.3";
+    public static final String version = "1.4";
     /** Mod name. */
     public static final String name = "KratzAuth";
 

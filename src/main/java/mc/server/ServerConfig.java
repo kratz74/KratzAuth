@@ -3,11 +3,13 @@
  */
 package mc.server;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import mc.log.LogLevel;
 import mc.log.Logger;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
 
 /**
  * Server configuration.
@@ -23,6 +25,8 @@ public class ServerConfig {
     /** Configuration instance. */
     private static ServerConfig INSTANCE;
 
+    private static ForgeConfigSpec SPEC;
+
     /**
      * Get database connection host name or IP.
      * @return Database connection host name or IP.
@@ -31,7 +35,7 @@ public class ServerConfig {
         if (INSTANCE == null) {
             throw new IllegalStateException("Server configuration is not yet available");
         }
-        return INSTANCE.dbHost;
+        return INSTANCE.dbHost.get();
     }
 
     /**
@@ -42,7 +46,7 @@ public class ServerConfig {
         if (INSTANCE == null) {
             throw new IllegalStateException("Server configuration is not yet available");
         }
-        return INSTANCE.dbPort;
+        return INSTANCE.dbPort.get();
     }
 
     /**
@@ -53,7 +57,7 @@ public class ServerConfig {
         if (INSTANCE == null) {
             throw new IllegalStateException("Server configuration is not yet available");
         }
-        return INSTANCE.dbUser;
+        return INSTANCE.dbUser.get();
     }
 
     /**
@@ -64,7 +68,7 @@ public class ServerConfig {
         if (INSTANCE == null) {
             throw new IllegalStateException("Server configuration is not yet available");
         }
-        return INSTANCE.dbPassword;
+        return INSTANCE.dbPassword.get();
     }
 
     /**
@@ -75,7 +79,7 @@ public class ServerConfig {
         if (INSTANCE == null) {
             throw new IllegalStateException("Server configuration is not yet available");
         }
-        return INSTANCE.dbName;
+        return INSTANCE.dbName.get();
     }
 
     /**
@@ -86,7 +90,7 @@ public class ServerConfig {
         if (INSTANCE == null) {
             throw new IllegalStateException("Server configuration is not yet available");
         }
-        return INSTANCE.dbTable;
+        return INSTANCE.dbTable.get();
     }
 
     /**
@@ -97,7 +101,7 @@ public class ServerConfig {
         if (INSTANCE == null) {
             throw new IllegalStateException("Server configuration is not yet available");
         }
-        return INSTANCE.dbUserColumn;
+        return INSTANCE.dbUserColumn.get();
     }
 
     /**
@@ -108,7 +112,7 @@ public class ServerConfig {
         if (INSTANCE == null) {
             throw new IllegalStateException("Server configuration is not yet available");
         }
-        return INSTANCE.dbPasswordColumn;
+        return INSTANCE.dbPasswordColumn.get();
     }
 
     /**
@@ -116,7 +120,7 @@ public class ServerConfig {
      * @return Value of {@code true} if users authentication is enabled or {@code false} otherwise.
      */
     public static boolean isEnabled() {
-        return INSTANCE.enable;
+        return INSTANCE.enabled.get();
     }
     /**
      * Get server welcome message after successful login.
@@ -126,7 +130,7 @@ public class ServerConfig {
         if (INSTANCE == null) {
             throw new IllegalStateException("Server configuration is not yet available");
         }
-        return INSTANCE.welcomeMessage;
+        return INSTANCE.welcomeMessage.get();
     }
     /**
      * Get server welcome info after successful login.
@@ -136,7 +140,7 @@ public class ServerConfig {
         if (INSTANCE == null) {
             throw new IllegalStateException("Server configuration is not yet available");
         }
-        return INSTANCE.welcomeInfo;
+        return INSTANCE.welcomeInfo.get();
     }
     /**
      * Get server kick message after login failure.
@@ -146,126 +150,116 @@ public class ServerConfig {
         if (INSTANCE == null) {
             throw new IllegalStateException("Server configuration is not yet available");
         }
-        return INSTANCE.kickMessage;
+        return INSTANCE.kickMessage.get();
     }
 
     /**
      * Initialize server configuration.
-     * @param e Pre-initialization event.
      */
-    public static void init(ModConfig.ModConfigEvent e) {
-        INSTANCE = new ServerConfig(e);
+    public static void init() {
+    	ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        final Pair<ServerConfig, ForgeConfigSpec> specPair = builder.configure(ServerConfig::new);
+    	SPEC = specPair.getRight();
+    	INSTANCE = specPair.getLeft();
     }
 
-    private final ForgeConfigSpec spec;
-    private final ForgeConfigSpec.IntValue versionSpec;
+    public static void register(final ModLoadingContext context) {
+    	context.registerConfig(ModConfig.Type.COMMON, SPEC);
+    }
+
+    public static void save() {
+    	SPEC.save();
+    }
+
+    public static void log() {
+        Logger.log(LogLevel.INFO, 1, "Database %s on %s@%s:%d", getDbName(), getDbUser(), getDbHost(), getDbPort());
+        Logger.log(LogLevel.INFO, 1, "Table: %s, users: %s, passwords: %s", getDbTable(), getDbUserColumn(), getDbPasswordColumn());
+        Logger.log(LogLevel.INFO, 1, "Welcome message: %s", getWelcomeMessage());
+        Logger.log(LogLevel.INFO, 1, "Welcome info: %s", getWelcomeInfo());
+        Logger.log(LogLevel.INFO, 1, "Kick message: %s", getKickMessage());
+    }
 
     /** Database connection host name or IP. */
-    private final String dbHost;
+    private final ForgeConfigSpec.ConfigValue<String> dbHost;
 
     /** Database connection port. */
-    private final int dbPort;
+    private final ForgeConfigSpec.ConfigValue<Integer> dbPort;
 
     /** Database connection user name. */
-    private final String dbUser;
+    private final ForgeConfigSpec.ConfigValue<String> dbUser;
 
     /** Database connection user password. */
-    private final String dbPassword;
+    private final ForgeConfigSpec.ConfigValue<String> dbPassword;
 
     /** Database name. */
-    private final String dbName;
+    private final ForgeConfigSpec.ConfigValue<String> dbName;
 
     /** Database table with user credentials.*/
-    private final String dbTable;
+    private final ForgeConfigSpec.ConfigValue<String> dbTable;
 
     /** Database table column with user name. */
-    private final String dbUserColumn;
+    private final ForgeConfigSpec.ConfigValue<String> dbUserColumn;
 
     /** Database table column with user password. */
-    private final String dbPasswordColumn;
+    private final ForgeConfigSpec.ConfigValue<String> dbPasswordColumn;
 
     /** Enable/disable users authentication. */
-    private final boolean enable;
+    private final ForgeConfigSpec.ConfigValue<Boolean> enabled;
 
     /** Welcome message after successful login. */
-    private final String welcomeMessage;
+    private final ForgeConfigSpec.ConfigValue<String> welcomeMessage;
 
     /** Welcome information after successful login. */
-    private final String welcomeInfo;
+    private final ForgeConfigSpec.ConfigValue<String> welcomeInfo;
 
     /** Kick message after login failure. */
-    private final String kickMessage;
+    private final ForgeConfigSpec.ConfigValue<String> kickMessage;
 
     /**
      * Creates an instance of server configuration object.
-     * @param e Pre-initialization event.
+     * @param builder Configuration builder.
      */
-    private ServerConfig(ModConfig.ModConfigEvent e) {
-    	Logger.log(LogLevel.INFO, "Loading server configuration");
-    	ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
-    	versionSpec = builder
-    			.comment("Configuration file version number")
-    			.defineInRange("version", 1, 1, 2);
-
-    	ForgeConfigSpec.ConfigValue<String> dbHostCfg = builder
-    			.comment("Database connection host name or IP")
-    			.define("DbHost", "127.0.0.1");
-    	ForgeConfigSpec.ConfigValue<Integer> dbPortCfg = builder
-    			.comment("Database connection port"
-    					).define("DbPort", 3306);
-    	ForgeConfigSpec.ConfigValue<String> dbUserCfg = builder
-    			.comment("Database connection user name")
-    			.define("DbUser", "myUser");
-    	ForgeConfigSpec.ConfigValue<String> dbPasswordCfg = builder
-    			.comment("Database connection user password")
-    			.define("DbPassword", "myPassword");
-    	ForgeConfigSpec.ConfigValue<String> dbNameCfg = builder
-    			.comment("Database name")
-    			.define("DbName", "forum");
-    	ForgeConfigSpec.ConfigValue<String> dbTableCfg = builder
-    			.comment("Database table with user credentials")
-    			.define("DbUserTable", "forum_users");
-    	ForgeConfigSpec.ConfigValue<String> dbUserColumnCfg = builder
-    			.comment("Database table column with user name")
-    			.define("DbUserColumn", "username");
-    	ForgeConfigSpec.ConfigValue<String> dbPasswordColumnCfg = builder
-    			.comment("Database table column with user password")
-    			.define("DbPasswordColumn", "user_password");
-    	ForgeConfigSpec.ConfigValue<Boolean> enableCfg = builder
+    private ServerConfig(final ForgeConfigSpec.Builder builder) {
+    	enabled = builder
     			.comment("Enable/disable users authentication")
     			.define("Enabled", true);
-    	ForgeConfigSpec.ConfigValue<String> welcomeMessageCfg = builder
+        builder.push(DB_CATEGORY);
+    	dbHost = builder
+    			.comment("Database connection host name or IP")
+    			.define("DbHost", "127.0.0.1");
+    	dbPort = builder
+    			.comment("Database connection port")
+    			.define("DbPort", 3306);
+    	dbUser = builder
+    			.comment("Database connection user name")
+    			.define("DbUser", "myUser");
+    	dbPassword = builder
+    			.comment("Database connection user password")
+    			.define("DbPassword", "myPassword");
+    	dbName = builder
+    			.comment("Database name")
+    			.define("DbName", "forum");
+    	dbTable = builder
+    			.comment("Database table with user credentials")
+    			.define("DbUserTable", "forum_users");
+    	dbUserColumn = builder
+    			.comment("Database table column with user name")
+    			.define("DbUserColumn", "username");
+    	dbPasswordColumn = builder
+    			.comment("Database table column with user password")
+    			.define("DbPasswordColumn", "user_password");
+    	builder.pop();
+    	builder.push(LOGIN);
+    	welcomeMessage = builder
     			.comment("Welcome message to display on login")
-    			.define("WelcomeMessage", "Welcome to the Lord of the Rings Minecraft");
-    	ForgeConfigSpec.ConfigValue<String> welcomeInfoCfg = builder
+    			.define("WelcomeMessage", "Welcome to the carovnak.cz Minecraft");
+    	welcomeInfo = builder
     			.comment("Welcome information to display on login")
     			.define("WelcomeInfo", "Check http://www.carovnak.cz for news.");
-    	ForgeConfigSpec.ConfigValue<String> kickMessageCfg = builder
+    	kickMessage = builder
     			.comment("Kick message after login failure")
     			.define("KickMessage", "Wrong user name or password. Check your registration on http://www.carovnak.cz web.");
-
     	builder.pop();
-    	spec = builder.build();
-    	spec.save();
-
-        dbHost = dbHostCfg.get();
-        dbPort = dbPortCfg.get();
-        dbUser = dbUserCfg.get();
-        dbPassword = dbPasswordCfg.get();
-        dbName = dbNameCfg.get();
-        dbTable = dbUserColumnCfg.get();
-        dbUserColumn = dbUserColumnCfg.get();
-        dbPasswordColumn = dbPasswordColumnCfg.get();
-        // Null on clients side means users authentication is always enabled.
-        enable = enableCfg != null ? enableCfg.get() : true;
-        welcomeMessage = welcomeMessageCfg.get();
-        welcomeInfo = welcomeInfoCfg.get();
-        kickMessage = kickMessageCfg.get();
-        Logger.log(LogLevel.INFO, 1, "Database %s on %s@%s:%d", dbName, dbUser, dbHost, dbPort);
-        Logger.log(LogLevel.INFO, 1, "Table: %s, users: %s, passwords: %s", dbTable, dbUserColumn, dbPasswordColumn);
-        Logger.log(LogLevel.INFO, 1, "Welcome message: %s", welcomeMessage);
-        Logger.log(LogLevel.INFO, 1, "Welcome info: %s", welcomeInfo);
-        Logger.log(LogLevel.INFO, 1, "Kick message: %s", kickMessage);
     }
 
 }

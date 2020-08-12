@@ -58,8 +58,8 @@ public class ClientMessagesHandler {
 			Logger.log(LogLevel.INFO, "Sending auth reponse as user %s with password %s", USER, PASSWORD);
 			CHANNEL.sendToServer(new AuthPacketResponse(USER, PASSWORD));
 		} else {
-			Logger.log(LogLevel.WARNING, "User from request does not match local user");
-			CHANNEL.sendToServer(new AuthPacketResponse(USER, null));
+			Logger.log(LogLevel.WARNING, "User from request does not match local user %s", USER == null ? "<null>" : USER);
+			CHANNEL.sendToServer(new AuthPacketResponse(USER == null ? "" : USER, ""));
 		}
 	}
 

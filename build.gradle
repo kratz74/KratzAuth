@@ -79,6 +79,7 @@ minecraft {
 
 dependencies {
     minecraft 'net.minecraftforge:forge:' + minecraft_version + '-' + forge_version
+    compile "mysql:mysql-connector-java:5.1.48"
 }
 
 jar {
@@ -86,11 +87,11 @@ jar {
         attributes([
             "Specification-Title": "kratzauth",
             "Specification-Vendor": "Kratz",
-            "Specification-Version": "1.3", // The version number of the specification, not the version of the mod
+            "Specification-Version": "1.4", // The version number of the specification, not the version of the mod
             "Implementation-Title": project.name,
             "Implementation-Version": "${version}",  // the version number of the mod.  copy the version from earlier in this file
             "Implementation-Vendor" :"Kratz",
-            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
         ])
     }
 }
